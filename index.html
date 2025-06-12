@@ -1,36 +1,72 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html>
 <head>
+  <title>NyayaSetu - Digital Nyay</title>
   <meta charset="UTF-8">
-  <title>NyayaSetu – डिजिटल न्याय पोर्टल</title>
+  <script type="module">
+    // Firebase imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getStorage, ref, uploadBytes } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyC6VjeJJ1-JhUozW3QUZR9vu9bx16Nyrws",
+      authDomain: "nyayasetu-a9621.firebaseapp.com",
+      projectId: "nyayasetu-a9621",
+      storageBucket: "nyayasetu-a9621.appspot.com",
+      messagingSenderId: "411412684697",
+      appId: "1:411412684697:web:581935616e789c81df3d08",
+      measurementId: "G-0J6C3BCDCM"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const storage = getStorage(app);
+    const db = getFirestore(app);
+
+    async function uploadEvidence(event) {
+      event.preventDefault();
+
+      const name = document.getElementById("name").value;
+      const description = document.getElementById("desc").value;
+      const file = document.getElementById("file").files[0];
+
+      if (!file || !description) {
+        alert("Please fill in description and upload a file.");
+        return;
+      }
+
+      const fileRef = ref(storage, 'evidence/' + Date.now() + '_' + file.name);
+      await uploadBytes(fileRef, file);
+
+      await addDoc(collection(db, "nyayasetu"), {
+        name: name || "Anonymous",
+        description: description,
+        fileName: file.name,
+        timestamp: serverTimestamp()
+      });
+
+      document.getElementById("form").reset();
+      alert("✅ Saboot safalta se upload ho gaya!");
+    }
+
+    window.uploadEvidence = uploadEvidence;
+  </script>
 </head>
-<body style="font-family: Arial; background-color: #f4f4f4; padding: 20px;">
-  <h1>🛡️ NyayaSetu – डिजिटल न्याय पोर्टल</h1>
-  <p><strong>यदि आपको कोई खतरा है, मानसिक/शारीरिक शोषण हो रहा है या आपको डर है कि कुछ हो सकता है — तो यहाँ पहले से सबूत दर्ज करें।</strong></p>
-
-  <form id="evidenceUploadForm" style="background:white;padding:15px;border-radius:8px;">
-    <label for="type">📁 सबूत का प्रकार:</label><br>
-    <select name="type" id="type">
-      <option value="screenshot">📸 स्क्रीनशॉट</option>
-      <option value="video">🎥 वीडियो</option>
-      <option value="audio">🔊 ऑडियो</option>
-      <option value="photo">🖼️ फोटो</option>
-      <option value="document">📄 दस्तावेज़</option>
-      <option value="text">📝 लिखित बयान</option>
-    </select><br><br>
-
-    <label for="evidenceFile">🔗 अपनी फाइल अपलोड करें:</label><br>
-    <input type="file" id="evidenceFile" name="evidenceFile" multiple required><br><br>
-
-    <label for="description">🗣️ अपना संक्षिप्त बयान (वैकल्पिक):</label><br>
-    <textarea id="description" name="description" rows="4" cols="50" placeholder="मुझे पिछले 3 महीनों से XYZ व्यक्ति परेशान कर रहा है..."></textarea><br><br>
-
-    <button type="submit">📤 सबूत सबमिट करें</button>
+<body style="font-family: Arial; padding: 2em; background-color: #f4f4f4;">
+  <h1>📜 NyayaSetu - Digital FIR Portal</h1>
+  <form id="form" onsubmit="uploadEvidence(event)">
+    <label>Name (Optional):</label><br>
+    <input type="text" id="name" placeholder="Apka naam (optional)" /><br><br>
+    
+    <label>Incident Description:</label><br>
+    <textarea id="desc" placeholder="Yahan ghatna likhiye" required></textarea><br><br>
+    
+    <label>Upload File (Photo/Video/Audio):</label><br>
+    <input type="file" id="file" required /><br><br>
+    
+    <button type="submit">📤 Saboot Submit Karo</button>
   </form>
-
-  <footer style="margin-top: 50px;">
-    <hr>
-    <p>© 2025 NyayaSetu </p>
-  </footer>
 </body>
 </html>
