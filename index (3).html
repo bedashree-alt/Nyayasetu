@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <title>NyayaSetu – डिजिटल न्याय पोर्टल</title>
+</head>
+<body style="font-family: Arial; background-color: #f4f4f4; padding: 20px;">
+  <h1>🛡️ NyayaSetu – डिजिटल न्याय पोर्टल</h1>
+  <p><strong>यदि आपको कोई खतरा है, मानसिक/शारीरिक शोषण हो रहा है या आपको डर है कि कुछ हो सकता है — तो यहाँ पहले से सबूत दर्ज करें।</strong></p>
+
+  <form id="evidenceUploadForm" style="background:white;padding:15px;border-radius:8px;">
+    <label for="type">📁 सबूत का प्रकार:</label><br>
+    <select name="type" id="type">
+      <option value="screenshot">📸 स्क्रीनशॉट</option>
+      <option value="video">🎥 वीडियो</option>
+      <option value="audio">🔊 ऑडियो</option>
+      <option value="photo">🖼️ फोटो</option>
+      <option value="document">📄 दस्तावेज़</option>
+      <option value="text">📝 लिखित बयान</option>
+    </select><br><br>
+
+    <label for="evidenceFile">🔗 अपनी फाइल अपलोड करें:</label><br>
+    <input type="file" id="evidenceFile" name="evidenceFile" multiple required><br><br>
+
+    <label for="description">🗣️ अपना संक्षिप्त बयान (वैकल्पिक):</label><br>
+    <textarea id="description" name="description" rows="4" cols="50" placeholder="मुझे पिछले 3 महीनों से XYZ व्यक्ति परेशान कर रहा है..."></textarea><br><br>
+
+    <button type="submit">📤 सबूत सबमिट करें</button>
+  </form>
+
+  <footer style="margin-top: 50px;">
+    <hr>
+    <p>© 2025 NyayaSetu – Designed & Initiated by Rajnandini Bedashree Swarupadas</p>
+  </footer>
+</body>
+</html>
