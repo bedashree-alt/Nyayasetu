@@ -8,7 +8,7 @@
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -44,33 +44,57 @@
         return;
       }
 
+      const maxFileSize = 50 * 1024 * 1024; // 50MB
+      if (file.size > maxFileSize) {
+        alert("फ़ाइल बहुत बड़ी है। कृपया 50MB से कम फ़ाइल अपलोड करें। (File too large. Please upload less than 50MB.)");
+        return;
+      }
+
       try {
         const submitBtn = document.querySelector("button[type='submit']");
         submitBtn.disabled = true;
-        submitBtn.textContent = "⏳ Uploading evidence...";
+        submitBtn.textContent = "⏳ Uploading evidence... 0%";
 
-        // Upload file to Firebase Storage
+        // Create file reference
         const fileRef = ref(storage, 'evidence/' + Date.now() + '_' + file.name);
-        const snapshot = await uploadBytes(fileRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
+        const uploadTask = uploadBytesResumable(fileRef, file);
 
-        // Save metadata + file URL in Firestore
-        await addDoc(collection(db, "nyayasetu"), {
-          name: name || "Anonymous",
-          gender: gender,
-          description: description,
-          fileName: file.name,
-          fileUrl: downloadURL,
-          timestamp: serverTimestamp()
-        });
+        // Track progress
+        uploadTask.on('state_changed',
+          (snapshot) => {
+            const progress = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+            submitBtn.textContent = `⏳ Uploading evidence... ${progress}%`;
+          },
+          (error) => {
+            console.error("Upload error:", error);
+            alert("❌ कुछ गलत हो गया, कृपया पुनः प्रयास करें। (Something went wrong, please try again.)");
+            submitBtn.disabled = false;
+            submitBtn.textContent = "📤 सबूत सबमिट करें (Submit Evidence)";
+          },
+          async () => {
+            // Upload complete
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
-        // Reset form & button
-        document.getElementById("form").reset();
-        alert("✅ आपका सबूत सफलतापूर्वक अपलोड हो गया है! (Your evidence has been successfully uploaded!)");
+            // Save metadata + URL in Firestore
+            await addDoc(collection(db, "nyayasetu"), {
+              name: name || "Anonymous",
+              gender: gender,
+              description: description,
+              fileName: file.name,
+              fileUrl: downloadURL,
+              timestamp: serverTimestamp()
+            });
+
+            document.getElementById("form").reset();
+            alert("✅ आपका सबूत सफलतापूर्वक अपलोड हो गया है! (Your evidence has been successfully uploaded!)");
+            submitBtn.disabled = false;
+            submitBtn.textContent = "📤 सबूत सबमिट करें (Submit Evidence)";
+          }
+        );
+
       } catch (error) {
         console.error("Upload error:", error);
         alert("❌ कुछ गलत हो गया, कृपया पुनः प्रयास करें। (Something went wrong, please try again.)");
-      } finally {
         const submitBtn = document.querySelector("button[type='submit']");
         submitBtn.disabled = false;
         submitBtn.textContent = "📤 सबूत सबमिट करें (Submit Evidence)";
@@ -161,4 +185,3 @@
   </form>
 </body>
 </html>
-
