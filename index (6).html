@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Denied Attendance Tracker</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #f3faff;
+      padding: 50px;
+    }
+    input {
+      padding: 10px;
+      width: 80%;
+      font-size: 16px;
+      margin-bottom: 15px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>🛑 Add Denied User Entry</h2>
+  <form id="denyForm">
+    <input type="text" id="meetLink" placeholder="Google Meet या Zoom लिंक डालें" required />
+    <br>
+    <button type="submit">📥 Save Denied User</button>
+  </form>
+  <div id="status"></div>
+
+  <script>
+    const apiKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVseGlkdGF1dW9ldWRiZGR4c3VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAxNzI0MTYsImV4cCI6MjA2NTc0ODQxNn0.vPEYUUdGSBB-s1ehTE7LyQfKqxFwBM6hGUEMiFf-WNg";
+    const supabaseUrl = "https://ulxidtauuoeudbddxsuj.supabase.co";
+    const tableName = "meet_clicks";
+
+    const denyForm = document.getElementById("denyForm");
+    const statusBox = document.getElementById("status");
+
+    function generateName() {
+      return "Auto_Denied_" + Math.floor(1000 + Math.random() * 9000);
+    }
+
+    denyForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const meetLink = document.getElementById("meetLink").value.trim();
+      const name = generateName();
+
+      if (!meetLink) {
+        statusBox.textContent = "❌ Please enter a link.";
+        return;
+      }
+
+      statusBox.textContent = "⏳ Submitting...";
+
+      try {
+        const response = await fetch(`${supabaseUrl}/rest/v1/${tableName}`, {
+          method: "POST",
+          headers: {
+            "apikey": apiKey,
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+            "Prefer": "return=representation"
+          },
+          body: JSON.stringify({ name, meet_link: meetLink })
+        });
+
+        if (response.ok) {
+          statusBox.textContent = `✅ Denied user "${name}" saved!`;
+          denyForm.reset();
+        } else {
+          const errorText = await response.text();
+          statusBox.textContent = `❌ Failed to save: ${errorText}`;
+        }
+      } catch (error) {
+        statusBox.textContent = "❌ Network error: " + error.message;
+      }
+    });
+  </script>
+</body>
+</html>
